@@ -1,0 +1,19 @@
+@import;
+
+@import ;
+
+@import    ;
+
+@import "";
+
+@import '';
+
+@import url();
+
+@import url("");
+
+@import url('');
+
+@import {
+	foo: bar;
+}

@@ -1,0 +1,5 @@
+.level-3 {
+    background-color: black;
+}
+
+@import url(level4/foo);
