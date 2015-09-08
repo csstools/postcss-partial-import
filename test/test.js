@@ -67,4 +67,8 @@ describe('postcss-partial-import', function () {
 	it('ignores remote imports', function (done) {
 		testFixture('web', {}, done);
 	});
+
+	it('handles media queried imports', function (done) {
+		testFixture('media', {}, done);
+	});
 });

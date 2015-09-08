@@ -15,10 +15,10 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 	var importRule = function (atRule, result, fromPath) {
 		return new Promise(function (resolve, reject) {
-			var file = atRule.params.trim()
-				.replace(/^(url\((.*)\))$/, '$2')
-				.replace(/^((["'])(.*)\2)$/, '$3');
-
+			var matches = /(?:url\()?['"]?([^'"\)]*)['"]?(?:\))?(?:\s+(.+))?/gi.exec(atRule.params);
+			if (!matches) return reject('Could not parse import: ' + atRule.params);
+			var file = matches[1];
+			var media = matches[2];
 			// reject empty imports
 			if (!file) return reject('Empty import detected');
 			// ignore remote resources
@@ -31,7 +31,13 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 				options.from = file;
 				processor.process(css, options).then(function (results) {
 					parseStyles(results.root, results).then(function () {
-						atRule.replaceWith(results.root);
+						if (media) {
+							atRule.name = 'media';
+							atRule.params = media;
+							atRule.raws.between = ' ';
+							atRule.append(results.root);
+						}
+						else atRule.replaceWith(results.root);
 						resolve();
 					}, reject);
 				}, reject);
