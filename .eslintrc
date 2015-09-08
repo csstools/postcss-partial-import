@@ -11,7 +11,6 @@
 		"no-extra-boolean-cast":       [2],
 		"no-inner-declarations":       [2],
 		"no-this-before-super":        [2],
-		"no-use-before-define":        [2],
 		"no-array-constructor":        [2],
 		"object-curly-spacing":        [2, "always"],
 		"no-floating-decimal":         [2],
