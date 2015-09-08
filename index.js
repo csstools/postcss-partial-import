@@ -20,7 +20,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 			// reject empty imports
 			if (!file) return reject('Empty import detected');
 			// ignore remote resources
-			if (/^https?:\/\//.test(file)) return resolve();
+			if (/^(https?:)?\/\//.test(file)) return resolve();
 
 			file = getPath(file, fromPath);
 			readFile(file).then(function(css) {
