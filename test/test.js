@@ -44,21 +44,27 @@ function testString(inputCSS, expectCSS, opts, done) {
 }
 
 describe('postcss-partial-import', function () {
-	this.timeout(10000);
-
 	it('imports up and down a tree', function (done) {
 		testFixture('basic', {}, done);
 	});
 
-	it('ignores bad imports', function (done) {
-		testFixture('broken', {}, done);
+	it('fails on bad imports', function (done) {
+		var fixtureDir = './test/fixtures/';
+		var inputPath  = path.resolve(fixtureDir + 'broken.css');
+		var inputCSS  = fs.readFileSync(inputPath, 'utf8');
+		postcss([plugin({})]).process(inputCSS, {
+			from: inputPath
+		}).then(function () { }, function (err) {
+			expect(err).to.eql('Empty import detected');
+			done();
+		});
 	});
 
 	it('handles string input', function (done) {
 		testString('@import "test/fixtures/level1/qux";', '.level-1-qux {\n    background-color: black\n}', {}, done);
 	});
 
-	it('handles url imports', function (done) {
+	it('ignores remote imports', function (done) {
 		testFixture('web', {}, done);
 	});
 });
