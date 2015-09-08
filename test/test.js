@@ -78,5 +78,5 @@ describe('postcss-partial-import', function () {
 			expect(Object.keys(cache).length).to.eql(10);
 			testFixture('basic', { cacheDir: path.join(__dirname, 'cache') }, done);
 		});
-	})
+	});
 });
