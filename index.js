@@ -11,10 +11,10 @@ var notfoundmsg = 'Could not find import: ';
 var notreadmsg  = 'Could not read import: ';
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
-	var cwd = opts && opts.root || process.cwd();
-	var enc = opts && opts.encoding || 'utf8';
-	var ext = opts && opts.ext || 'css';
-	var pre = opts && opts.pre || '_';
+	var cwd = opts && opts.root      || process.cwd();
+	var enc = opts && opts.encoding  || 'utf8';
+	var ext = opts && opts.extension || 'css';
+	var pre = opts && opts.prefix    || '_';
 
 	function getPartialPath(fromdir, rawpath) {
 		var rawext  = path.extname(rawpath);

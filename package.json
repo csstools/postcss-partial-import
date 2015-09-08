@@ -1,6 +1,6 @@
 {
 	"name": "postcss-partial-import",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "PostCSS plugin that imports like Sass",
 	"keywords": [
 		"postcss",
