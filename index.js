@@ -3,6 +3,7 @@ var readFile = require('fs-readfile-promise');
 var path     = require('path');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
+	var enc = opts && opts.encoding || 'utf8';
 	var ext = opts && opts.extension || 'css';
 	var pre = opts && opts.prefix || '_';
 
@@ -23,7 +24,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 			if (/^(https?:)?\/\//.test(file)) return resolve();
 
 			file = getPath(file, fromPath);
-			readFile(file).then(function(css) {
+			readFile(file, { encoding: enc }).then(function(css) {
 				var options = result.opts;
 				options.from = file;
 				result.processor.process(css, options).then(function (results) {
