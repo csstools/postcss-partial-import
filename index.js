@@ -1,6 +1,7 @@
 var postcss  = require('postcss');
 var readFile = require('fs-readfile-promise');
 var path     = require('path');
+var extend   = require('util')._extend;
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	var enc = opts && opts.encoding || 'utf8';
@@ -25,11 +26,14 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 			file = getPath(file, fromPath);
 			readFile(file, { encoding: enc }).then(function(css) {
-				var options = result.opts;
+				var processor = postcss();
+				var options = extend({}, result.opts);
 				options.from = file;
-				result.processor.process(css, options).then(function (results) {
-					atRule.replaceWith(results.root);
-					resolve();
+				processor.process(css, options).then(function (results) {
+					parseStyles(results.root, results).then(function () {
+						atRule.replaceWith(results.root);
+						resolve();
+					}, reject);
 				}, reject);
 			}, reject);
 		});
