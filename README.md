@@ -108,13 +108,6 @@ grunt.initConfig({
 
 ## Options
 
-#### `root`
-
-Type: `String`  
-Default: `process.cwd()`
-
-The root directory of files being imported.
-
 #### `encoding`
 
 Type: `String`  
