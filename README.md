@@ -129,6 +129,15 @@ Default: `_`
 
 The file extension sometimes prepended to partials being imported.
 
+#### `cacheDir`
+
+Type: `String`
+Default: `null`
+
+The directory to store cached includes in. Can reduce compilation time when there are a lot of `@include`s.
+
+Setting this property enables the cache.
+
 [ci]: https://travis-ci.org/jonathantneal/postcss-partial-import
 [ci-img]: https://travis-ci.org/jonathantneal/postcss-partial-import.svg
 [Gulp PostCSS]: https://github.com/postcss/gulp-postcss
