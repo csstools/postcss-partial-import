@@ -73,10 +73,10 @@ describe('postcss-partial-import', function () {
 	});
 
 	it('caches results', function (done) {
-		testFixture('basic', { cacheDir: path.join(__dirname, 'cache') }, function () {
+		testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, function () {
 			var cache = require( path.join(__dirname, 'cache', 'imports.json'));
 			expect(Object.keys(cache).length).to.eql(10);
-			testFixture('basic', { cacheDir: path.join(__dirname, 'cache') }, done);
+			testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, done);
 		});
 	});
 });
