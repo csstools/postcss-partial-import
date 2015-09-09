@@ -1,3 +1,8 @@
+## 1.2.0 (2015-09-09)
+
+Added: Support for media queries
+Added: Support for caching sources
+
 ## 1.1.1 (2015-09-08)
 
 Fixed: Plugins no longer run on imports
