@@ -129,6 +129,13 @@ Default: `_`
 
 The file extension sometimes prepended to partials being imported.
 
+#### `generate`
+
+Type: `Boolean`  
+Default: `false`
+
+The option if partials should be generated if they do not already exist.
+
 #### `cachedir`
 
 Type: `String`
