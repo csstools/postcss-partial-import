@@ -1,3 +1,9 @@
+## 1.3.0 (2015-09-14)
+
+Added: Support for generating imported files
+Updated: Switched to `fs-promise` from `fs` and `mkdirp`
+Updated: Switched to `assign` from `_extend`
+
 ## 1.2.0 (2015-09-09)
 
 Added: Support for media queries
