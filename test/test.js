@@ -1,7 +1,7 @@
 var path    = require('path');
 var postcss = require('postcss');
 var expect  = require('chai').expect;
-var fs      = require('fs');
+var fs      = require('fs-promise');
 
 var plugin = require('../');
 

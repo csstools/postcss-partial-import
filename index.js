@@ -1,10 +1,8 @@
 var assign   = require('object-assign');
-var fs       = require('fs');
+var fs       = require('fs-promise');
 var hash     = require('string-hash');
-var mkdirp   = require('mkdirp');
 var path     = require('path');
 var postcss  = require('postcss');
-var readFile = require('fs-readfile-promise');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	opts = assign({
@@ -53,7 +51,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		return new Promise(function (resolve, reject) {
 			var fileCache = cache[filename].cache;
 
-			readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
+			fs.readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
 				var processor = postcss();
 				var options   = assign({}, result.opts);
 
@@ -87,7 +85,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 			file = getPath(file, fromPath);
 
-			readFile(file, { encoding: opts.encoding }).then(function (css) {
+			fs.readFile(file, { encoding: opts.encoding }).then(function (css) {
 				var processor = postcss();
 				var options   = assign({}, result.opts);
 
@@ -165,7 +163,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 			var cache;
 
 			if (opts.cachedir) {
-				mkdirp.sync(opts.cachedir);
+				fs.mkdirsSync(opts.cachedir);
 
 				try {
 					cache = require(opts.cachefile);
