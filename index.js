@@ -1,4 +1,4 @@
-var extend   = require('util')._extend;
+var assign   = require('object-assign');
 var fs       = require('fs');
 var hash     = require('string-hash');
 var mkdirp   = require('mkdirp');
@@ -51,7 +51,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 			readFile(fileCache, { encoding: enc }).then(function (contents) {
 				var processor = postcss();
-				var options   = extend({}, result.opts);
+				var options   = assign({}, result.opts);
 
 				options.from = filename;
 
@@ -85,7 +85,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 			readFile(file, { encoding: enc }).then(function (css) {
 				var processor = postcss();
-				var options   = extend({}, result.opts);
+				var options   = assign({}, result.opts);
 
 				options.from = file;
 
