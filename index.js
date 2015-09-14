@@ -7,11 +7,15 @@ var postcss  = require('postcss');
 var readFile = require('fs-readfile-promise');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
-	var cacheDir  = opts && opts.cachedir;
-	var cacheFile = cacheDir && path.join(cacheDir, 'imports.json');
-	var enc       = opts && opts.encoding || 'utf8';
-	var ext       = opts && opts.extension || 'css';
-	var pre       = opts && opts.prefix || '_';
+	opts = assign({
+		encoding:  'utf8',
+		extension: 'css',
+		prefix:    '_'
+	}, opts);
+
+	if (opts.cachedir) {
+		opts.cachefile = path.join(opts.cachedir, 'imports.json');
+	}
 
 	var getModified = function (filename) {
 		return fs.statSync(filename).mtime.getTime();
@@ -49,7 +53,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		return new Promise(function (resolve, reject) {
 			var fileCache = cache[filename].cache;
 
-			readFile(fileCache, { encoding: enc }).then(function (contents) {
+			readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
 				var processor = postcss();
 				var options   = assign({}, result.opts);
 
@@ -63,7 +67,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	};
 
 	var getPath = function (file, fromPath) {
-		if (!path.extname(file)) file = path.join(path.dirname(file), pre + path.basename(file) + '.' + ext);
+		if (!path.extname(file)) file = path.join(path.dirname(file), opts.prefix + path.basename(file) + '.' + opts.extension);
 
 		return path.resolve(path.dirname(fromPath), file);
 	};
@@ -83,7 +87,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 			file = getPath(file, fromPath);
 
-			readFile(file, { encoding: enc }).then(function (css) {
+			readFile(file, { encoding: opts.encoding }).then(function (css) {
 				var processor = postcss();
 				var options   = assign({}, result.opts);
 
@@ -142,7 +146,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 						if (imports.length) {
 							var output        = css.toResult().css;
-							var cacheFilename = path.resolve(cacheDir, hash(output) + '.css');
+							var cacheFilename = path.resolve(opts.cachedir, hash(output) + '.css');
 
 							cache[fromPath].cache = cacheFilename;
 
@@ -160,18 +164,18 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		return new Promise(function (resolve, reject) {
 			var cache;
 
-			if (cacheDir) {
-				mkdirp.sync(cacheDir);
+			if (opts.cachedir) {
+				mkdirp.sync(opts.cachedir);
 
 				try {
-					cache = require(cacheFile);
+					cache = require(opts.cachefile);
 				} catch (error) {
 					cache = {};
 				}
 			}
 
 			parseStyles(css, result, cache).then(function () {
-				if (cache) fs.writeFileSync(cacheFile, JSON.stringify(cache));
+				if (cache) fs.writeFileSync(opts.cachefile, JSON.stringify(cache));
 
 				resolve();
 			}, reject);
