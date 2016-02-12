@@ -140,10 +140,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 				// Only add dependencies when first adding file to the cache.
 				// Code reused from postcss-import: https://github.com/postcss/postcss-import
-				if (
-					typeof opts.addDependencyTo === "object" &&
-					typeof opts.addDependencyTo.addDependency === "function"
-				) {
+				if (typeof opts.addDependencyTo === 'object' && typeof opts.addDependencyTo.addDependency === 'function') {
 					opts.addDependencyTo.addDependency(fromPath);
 				}
 
