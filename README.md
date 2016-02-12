@@ -144,7 +144,6 @@ Default: `null`
 The directory to store cached includes in. Can reduce compilation time when there are a lot of `@include`s. Setting this property enables the cache.
 
 #### `addDependencyTo`
-
 Type: `function`  
 Default: `null`
 
