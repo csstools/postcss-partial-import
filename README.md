@@ -138,10 +138,27 @@ The option if partials should be generated if they do not already exist.
 
 #### `cachedir`
 
-Type: `String`
+Type: `String`  
 Default: `null`
 
 The directory to store cached includes in. Can reduce compilation time when there are a lot of `@include`s. Setting this property enables the cache.
+
+#### `addDependencyTo`
+Type: `function`  
+Default: `null`
+
+To pass CSS @import files to a compiler (such as webpack), which would otherwise not know which CSS files to watch for browser reloading.
+
+*Example*
+
+```javascript
+// webpack.config.js
+postcss: function(webpack) {
+    return [
+        precss({ addDependencyTo: webpack })
+    ];
+},
+```
 
 [ci]: https://travis-ci.org/jonathantneal/postcss-partial-import
 [ci-img]: https://travis-ci.org/jonathantneal/postcss-partial-import.svg
