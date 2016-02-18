@@ -138,7 +138,7 @@ The option if partials should be generated if they do not already exist.
 
 #### `cachedir`
 
-Type: `String``  
+Type: `String`  
 Default: `null`
 
 The directory to store cached includes in. Can reduce compilation time when there are a lot of `@include`s. Setting this property enables the cache.
