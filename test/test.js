@@ -11,8 +11,8 @@ function testFixture(name, opts, done) {
 	var actualPath = path.resolve(fixtureDir + name + '.actual.css');
 	var expectPath = path.resolve(fixtureDir + name + '.expect.css');
 
-	var inputCSS  = fs.readFileSync(inputPath, 'utf8');
-	var expectCSS = fs.readFileSync(expectPath, 'utf8');
+	var inputCSS  = fs.readFileSync(inputPath, 'utf8').replace(/\r\n/g, '\n');
+	var expectCSS = fs.readFileSync(expectPath, 'utf8').replace(/\r\n/g, '\n');
 
 	postcss([plugin(opts)]).process(inputCSS, {
 		from: inputPath
