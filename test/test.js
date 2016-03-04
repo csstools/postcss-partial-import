@@ -5,7 +5,7 @@ var fs      = require('fs-promise');
 
 var plugin = require('../');
 
-function testFixture(name, opts, done) {
+function testFixture(name, opts) {
 	var fixtureDir = './test/fixtures/';
 	var inputPath  = path.resolve(fixtureDir + name + '.css');
 	var actualPath = path.resolve(fixtureDir + name + '.actual.css');
@@ -14,7 +14,7 @@ function testFixture(name, opts, done) {
 	var inputCSS  = fs.readFileSync(inputPath, 'utf8').replace(/\r\n/g, '\n');
 	var expectCSS = fs.readFileSync(expectPath, 'utf8').replace(/\r\n/g, '\n');
 
-	postcss([plugin(opts)]).process(inputCSS, {
+	return postcss([plugin(opts)]).process(inputCSS, {
 		from: inputPath
 	}).then(function (result) {
 		var actualCSS = result.css;
@@ -23,44 +23,35 @@ function testFixture(name, opts, done) {
 
 		expect(actualCSS).to.eql(expectCSS);
 		expect(result.warnings()).to.be.empty;
-
-		done();
-	}).catch(function (error) {
-		done(error);
 	});
 }
 
-function testString(inputCSS, expectCSS, opts, done) {
-	postcss([plugin(opts)]).process(inputCSS).then(function (result) {
+function testString(inputCSS, expectCSS, opts) {
+	return postcss([plugin(opts)]).process(inputCSS).then(function (result) {
 		var actualCSS = result.css;
 
 		expect(actualCSS).to.eql(expectCSS);
 		expect(result.warnings()).to.be.empty;
-
-		done();
-	}).catch(function (error) {
-		done(error);
 	});
 }
 
 describe('postcss-partial-import', function () {
-	it('imports up and down a tree', function (done) {
-		testFixture('basic', {}, done);
+	it('imports up and down a tree', function () {
+		return testFixture('basic', {});
 	});
 
-	it('fails on bad imports', function (done) {
+	it('fails on bad imports', function () {
 		var fixtureDir = './test/fixtures/';
 		var inputPath  = path.resolve(fixtureDir + 'broken.css');
 		var inputCSS  = fs.readFileSync(inputPath, 'utf8');
-		postcss([plugin({})]).process(inputCSS, {
+		return postcss([plugin({})]).process(inputCSS, {
 			from: inputPath
 		}).then(function () { }, function (err) {
 			expect(err).to.eql('Empty import detected');
-			done();
 		});
 	});
 
-	it('generates imports', function (done) {
+	it('generates imports', function () {
 		var fixtureDir = './test/fixtures/';
 		var name       = 'generate';
 		var inputPath  = path.resolve(fixtureDir + name + '.css');
@@ -71,7 +62,7 @@ describe('postcss-partial-import', function () {
 		var inputCSS  = fs.readFileSync(inputPath, 'utf8');
 		var expectCSS = fs.readFileSync(expectPath, 'utf8');
 
-		postcss([plugin({ generate: true })]).process(inputCSS, {
+		return postcss([plugin({ generate: true })]).process(inputCSS, {
 			from: inputPath
 		}).then(function (result) {
 			var actualCSS = result.css;
@@ -81,29 +72,29 @@ describe('postcss-partial-import', function () {
 			expect(actualCSS).to.eql(expectCSS);
 			expect(result.warnings()).to.be.empty;
 
-			fs.stat(tempPath).then(function () {
-				fs.remove(tempPath).then(done);
-			});
+			return fs.stat(tempPath);
+		}).then(function () {
+			return fs.remove(tempPath);
 		});
 	});
 
-	it('handles string input', function (done) {
-		testString('@import "test/fixtures/level1/qux";', '.level-1-qux {\n    background-color: black\n}', {}, done);
+	it('handles string input', function () {
+		return testString('@import "test/fixtures/level1/qux";', '.level-1-qux {\n    background-color: black\n}', {});
 	});
 
-	it('ignores remote imports', function (done) {
-		testFixture('web', {}, done);
+	it('ignores remote imports', function () {
+		return testFixture('web', {});
 	});
 
-	it('handles media queried imports', function (done) {
-		testFixture('media', {}, done);
+	it('handles media queried imports', function () {
+		return testFixture('media', {});
 	});
 
-	it('caches results', function (done) {
-		testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, function () {
+	it('caches results', function () {
+		return testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, function () {
 			var cache = require( path.join(__dirname, 'cache', 'imports.json'));
 			expect(Object.keys(cache).length).to.eql(10);
-			testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, done);
+			return testFixture('basic', { cachedir: path.join(__dirname, 'cache') });
 		});
 	});
 });
