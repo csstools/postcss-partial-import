@@ -36,9 +36,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 		if (!isDependencyCached(file)) {
 			if (importCache && importCache.cache) {
-				fs.unlink(importCache.cache, function (error) {
-					if (error) throw error;
-				});
+				fs.unlinkSync(importCache.cache);
 			}
 
 			return false;
@@ -48,19 +46,17 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	};
 
 	var readFromCache = function (filename, result, cache) {
-		return new Promise(function (resolve, reject) {
-			var fileCache = cache[filename].cache;
+		var fileCache = cache[filename].cache;
 
-			fs.readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
-				var processor = postcss();
-				var options   = assign({}, result.opts);
+		return fs.readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
+			var processor = postcss();
+			var options   = assign({}, result.opts);
 
-				options.from = filename;
+			options.from = filename;
 
-				processor.process(contents, options).then(function (results) {
-					resolve(results.root);
-				}, reject);
-			}, reject);
+			return processor.process(contents, options);
+		}).then(function (results) {
+			return results.root;
 		});
 	};
 
@@ -71,120 +67,114 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	};
 
 	var importRule = function (atRule, result, fromPath, cache) {
-		return new Promise(function (resolve, reject) {
-			var matches = /(?:url\()?['"]?([^'"\)]*)['"]?(?:\))?(?:\s+(.+))?/gi.exec(atRule.params);
+		var matches = /(?:url\()?['"]?([^'"\)]*)['"]?(?:\))?(?:\s+(.+))?/gi.exec(atRule.params);
 
-			if (!matches) return reject('Could not parse import: ' + atRule.params);
+		if (!matches) {
+			return Promise.reject('Could not parse import: ' + atRule.params);
+		}
 
-			var file  = matches[1];
-			var media = matches[2];
+		var file  = matches[1];
+		var media = matches[2];
 
-			if (!file) return reject('Empty import detected');
+		if (!file) {
+			return Promise.reject('Empty import detected');
+		}
 
-			if (/^(https?:)?\/\//.test(file)) return resolve();
+		if (/^(https?:)?\/\//.test(file)) {
+			return Promise.resolve();
+		}
 
-			file = getPath(file, fromPath);
+		file = getPath(file, fromPath);
 
-			(opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
-				return fs.readFile(file, { encoding: opts.encoding });
-			}).then(function (css) {
-				var processor = postcss();
-				var options   = assign({}, result.opts);
+		return (opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
+			return fs.readFile(file, { encoding: opts.encoding });
+		}).then(function (css) {
+			var processor = postcss();
+			var options   = assign({}, result.opts);
 
-				options.from = file;
+			options.from = file;
 
-				processor.process(css, options).then(function (results) {
-					parseStyles(results.root, results, cache).then(function () {
-						if (cache && fromPath) {
-							cache[fromPath] = cache[fromPath] || { dep: [] };
+			return processor.process(css, options).then(function (results) {
+				return parseStyles(results.root, results, cache).then(function () {
+					if (cache && fromPath) {
+						cache[fromPath] = cache[fromPath] || { dep: [] };
 
-							if (cache[fromPath].dep.indexOf(file) === -1) cache[fromPath].dep.push(file);
-						}
+						if (cache[fromPath].dep.indexOf(file) === -1) cache[fromPath].dep.push(file);
+					}
 
-						if (media) {
-							atRule.name = 'media';
-							atRule.params = media;
-							atRule.raws.between = ' ';
-							atRule.append(results.root);
-						} else atRule.replaceWith(results.root);
-
-						resolve();
-					}, reject);
-				}, reject);
-			}, reject);
+					if (media) {
+						atRule.name = 'media';
+						atRule.params = media;
+						atRule.raws.between = ' ';
+						atRule.append(results.root);
+					} else atRule.replaceWith(results.root);
+				});
+			});
 		});
 	};
 
 	var parseStyles = function (css, result, cache) {
-		return new Promise(function (resolve, reject) {
-			var fromPath = result.opts.from || css.source.input.file;
+		var fromPath = result.opts.from || css.source.input.file;
 
-			if (fromPath && cache && isCached(fromPath, cache)) {
-				readFromCache(fromPath, result, cache).then(function (styles) {
-					styles.nodes.forEach(function (node) {
-						node.parent = css;
-					});
-
-					css.source = styles.source;
-					css.nodes  = styles.nodes;
-					css.raws   = styles.raws;
-
-					resolve();
-				}, reject);
-			} else {
-				var imports = [];
-
-				css.walkAtRules('import', function (atRule) {
-					imports.push(importRule(atRule, result, fromPath, cache));
+		if (fromPath && cache && isCached(fromPath, cache)) {
+			return readFromCache(fromPath, result, cache).then(function (styles) {
+				styles.nodes.forEach(function (node) {
+					node.parent = css;
 				});
 
-				// Only add dependencies when first adding file to the cache.
-				// Code reused from postcss-import: https://github.com/postcss/postcss-import
-				if (typeof opts.addDependencyTo === 'object' && typeof opts.addDependencyTo.addDependency === 'function') {
-					opts.addDependencyTo.addDependency(fromPath);
-				}
+				css.source = styles.source;
+				css.nodes  = styles.nodes;
+				css.raws   = styles.raws;
+			});
+		} else {
+			var imports = [];
 
-				Promise.all(imports).then(function () {
-					if (fromPath && cache) {
-						cache[fromPath] = cache[fromPath] || {};
+			css.walkAtRules('import', function (atRule) {
+				imports.push(importRule(atRule, result, fromPath, cache));
+			});
 
-						cache[fromPath].mtime = getModified(fromPath);
-
-						if (imports.length) {
-							var output        = css.toResult().css;
-							var cacheFilename = path.resolve(opts.cachedir, hash(output) + '.css');
-
-							cache[fromPath].cache = cacheFilename;
-
-							fs.writeFileSync(cacheFilename, output);
-						}
-					}
-
-					resolve();
-				}, reject);
+			// Only add dependencies when first adding file to the cache.
+			// Code reused from postcss-import: https://github.com/postcss/postcss-import
+			if (typeof opts.addDependencyTo === 'object' && typeof opts.addDependencyTo.addDependency === 'function') {
+				opts.addDependencyTo.addDependency(fromPath);
 			}
-		});
+
+			return Promise.all(imports).then(function () {
+				if (fromPath && cache) {
+					cache[fromPath] = cache[fromPath] || {};
+
+					cache[fromPath].mtime = getModified(fromPath);
+
+					if (imports.length) {
+						var output        = css.toResult().css;
+						var cacheFilename = path.resolve(opts.cachedir, hash(output) + '.css');
+
+						cache[fromPath].cache = cacheFilename;
+
+						return fs.writeFile(cacheFilename, output);
+					}
+				}
+			});
+		}
 	};
 
 	return function (css, result) {
-		return new Promise(function (resolve, reject) {
-			var cache;
+		var cache;
 
-			if (opts.cachedir) {
-				fs.mkdirsSync(opts.cachedir);
+		if (opts.cachedir) {
+			fs.mkdirsSync(opts.cachedir);
 
-				try {
-					cache = require(opts.cachefile);
-				} catch (error) {
-					cache = {};
-				}
+			try {
+				cache = require(opts.cachefile);
+			} catch (error) {
+				cache = {};
 			}
+		}
 
-			parseStyles(css, result, cache).then(function () {
-				if (cache) fs.writeFileSync(opts.cachefile, JSON.stringify(cache));
-
-				resolve();
-			}, reject);
+		return parseStyles(css, result, cache).then(function () {
+			if (cache) {
+				return fs.writeFile(opts.cachefile, JSON.stringify(cache));
+			}
 		});
 	};
 });
