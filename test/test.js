@@ -103,4 +103,12 @@ describe('postcss-partial-import', function () {
 	it('handles node_modules imports', function () {
 		return testFixture('node_modules', {});
 	});
+
+	it('handles modules support', function () {
+		return testFixture('transform', {
+			modules: {
+				base: path.join(__dirname, 'fixtures/')
+			}
+		});
+	});
 });

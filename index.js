@@ -4,6 +4,7 @@ var hash     = require('string-hash');
 var path     = require('path');
 var postcss  = require('postcss');
 var pkgres   = require('resolve');
+var modules  = require('postcss-modules');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	opts = assign({
@@ -15,6 +16,8 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	if (opts.cachedir) {
 		opts.cachefile = path.join(opts.cachedir, 'imports.json');
 	}
+
+	var moduleMaps = {};
 
 	var getModified = function (filename) {
 		return fs.statSync(filename).mtime.getTime();
@@ -106,7 +109,19 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		})).then(opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
 			return fs.readFile(file, { encoding: opts.encoding });
 		}).then(function (css) {
-			var transforms = [].concat(opts.transform || []);
+			var transforms = [];
+
+			if (opts.transforms) {
+				transforms = transforms.concat(opts.transforms || []);
+			}
+
+			if (opts.modules) {
+				transforms.push(modules({
+					getJSON: function (jfile, json) {
+						moduleMaps[file.replace(opts.modules.base, '')] = json;
+					}
+				}));
+			}
 
 			var processor = postcss(transforms);
 			var options   = assign({}, result.opts);
@@ -191,6 +206,12 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		}
 
 		return parseStyles(css, result, cache).then(function () {
+			if (opts.modules) {
+				var mapfile = opts.modules.mapfile || css.source.input.file + '.json';
+
+				return fs.writeFile(mapfile, JSON.stringify(moduleMaps));
+			}
+		}).then(function () {
 			if (cache) {
 				return fs.writeFile(opts.cachefile, JSON.stringify(cache));
 			}
