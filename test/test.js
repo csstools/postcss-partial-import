@@ -99,4 +99,8 @@ describe('postcss-partial-import', function () {
 			return testFixture('basic', { cachedir: path.join(__dirname, 'cache') });
 		});
 	});
+
+	it('handles node_modules imports', function () {
+		return testFixture('node_modules', {});
+	});
 });

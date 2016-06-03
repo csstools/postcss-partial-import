@@ -33,7 +33,8 @@
     "chai": "^3.2.0",
     "eslint": "^2.3.0",
     "eslint-config-postcss": "^2.0.1",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "normalize-css": "^2.3.1"
   },
   "files": [
     "index.js"
