@@ -91,6 +91,8 @@ describe('postcss-partial-import', function () {
 	});
 
 	it('caches results', function () {
+		fs.removeSync('./test/cache');
+
 		return testFixture('basic', { cachedir: path.join(__dirname, 'cache') }, function () {
 			var cache = require( path.join(__dirname, 'cache', 'imports.json'));
 			expect(Object.keys(cache).length).to.eql(10);
