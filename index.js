@@ -3,6 +3,7 @@ var fs       = require('fs-promise');
 var hash     = require('string-hash');
 var path     = require('path');
 var postcss  = require('postcss');
+var pkgres   = require('resolve');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 	opts = assign({
@@ -73,20 +74,36 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 			return Promise.reject('Could not parse import: ' + atRule.params);
 		}
 
-		var file  = matches[1];
+		var ofile = matches[1];
 		var media = matches[2];
 
-		if (!file) {
+		if (!ofile) {
 			return Promise.reject('Empty import detected');
 		}
 
-		if (/^(https?:)?\/\//.test(file)) {
+		if (/^(https?:)?\/\//.test(ofile)) {
 			return Promise.resolve();
 		}
 
-		file = getPath(file, fromPath);
+		var file = getPath(ofile, fromPath);
 
-		return (opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
+		return (new Promise(function (resolve) {
+			pkgres(ofile, {
+				packageFilter: function (pkg) {
+					if (pkg.main) {
+						pkg.main = pkg.style;
+					}
+
+					return pkg;
+				}
+			}, function (err, res) {
+				if (!err) {
+					file = res;
+				}
+
+				resolve();
+			});
+		})).then(opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
 			return fs.readFile(file, { encoding: opts.encoding });
 		}).then(function (css) {
 			var processor = postcss();
