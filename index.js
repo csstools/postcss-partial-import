@@ -106,7 +106,9 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		})).then(opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
 			return fs.readFile(file, { encoding: opts.encoding });
 		}).then(function (css) {
-			var processor = postcss();
+			var transforms = [].concat(opts.transform || []);
+
+			var processor = postcss(transforms);
 			var options   = assign({}, result.opts);
 
 			options.from = file;
