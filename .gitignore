@@ -1,4 +1,4 @@
-/node_modules
-/npm-debug.log
-/test/cache
-/test/fixtures/*.actual.css
+node_modules
+npm-debug.log
+/test/*.create.css
+/test/*.result.css

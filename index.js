@@ -1,220 +1,144 @@
-var assign   = require('object-assign');
-var fs       = require('fs-promise');
-var hash     = require('string-hash');
-var path     = require('path');
-var postcss  = require('postcss');
-var pkgres   = require('resolve');
-var modules  = require('postcss-modules');
+var assign  = require('object-assign');
+var path    = require('path');
+var postcss = require('postcss');
+
+var makeCSS = require('./lib/makeCSS');
+var getPath = require('./lib/getPath');
+var readCSS = require('./lib/readCSS');
+var readNPM = require('./lib/readNPM');
 
 module.exports = postcss.plugin('postcss-partial-import', function (opts) {
+	// Options with defaults
 	opts = assign({
+		dirs:      [],
 		encoding:  'utf8',
-		extension: 'css',
-		prefix:    '_'
+		extension: '.css',
+		generate:  false,
+		plugins:   [],
+		prefix:    '_',
+		addDependencyTo: false
 	}, opts);
 
-	if (opts.cachedir) {
-		opts.cachefile = path.join(opts.cachedir, 'imports.json');
+	if (!Array.isArray(opts.dirs)) {
+		// Normalized dirs array
+		opts.dirs = [opts.dirs];
 	}
 
-	var moduleMaps = {};
+	// Extended dirs array
+	opts.dirs.push(process.cwd(), 'node_modules', 'bower_components');
 
-	var getModified = function (filename) {
-		return fs.statSync(filename).mtime.getTime();
-	};
+	if (!Array.isArray(opts.plugins)) {
+		// Normalized plugins array
+		opts.plugins = [opts.plugins];
+	}
 
-	var isCached = function (file, cache) {
-		var isDependencyCached = function (filename) {
-			if (!filename) return false;
+	// Prepared processor
+	var processor = postcss(opts.plugins);
 
-			var importCache = cache[filename];
+	// Promise transformed CSS
+	var transformPromise = function (css) {
+		// Empty imports collection
+		var imports = [];
 
-			if (!importCache) return false;
+		// For each `import` at-rule
+		css.walkAtRules('import', function (atRule) {
+			// Whether the addDependency option is configured
+			var hasAddDependencyMethod = opts.addDependencyTo && typeof opts.addDependencyTo.addDependency === 'function';
 
-			if (getModified(filename) !== importCache.mtime) return false;
-
-			return !importCache.dep || !importCache.dep.some(isDependencyCached);
-		};
-
-		var importCache = cache[file];
-
-		if (!isDependencyCached(file)) {
-			if (importCache && importCache.cache) {
-				fs.unlinkSync(importCache.cache);
+			if (hasAddDependencyMethod) {
+				opts.addDependencyTo.addDependency(atRule.source.input.file);
 			}
 
-			return false;
-		}
+			// Directory of the current link
+			var dir = path.dirname(atRule.source.input.file);
 
-		return !!importCache.cache;
-	};
+			// At-rule params
+			var params = postcss.list.space(atRule.params);
 
-	var readFromCache = function (filename, result, cache) {
-		var fileCache = cache[filename].cache;
+			// Matching expressions
+			var matchWithinURL    = /^url\((.*?)\)$/;
+			var matchWithinQuote  = /^(['"])(.*?)\1$/;
+			var matchStartingHTTP = /^(https?:)?\/\//;
 
-		return fs.readFile(fileCache, { encoding: opts.encoding }).then(function (contents) {
-			var processor = postcss();
-			var options   = assign({}, result.opts);
+			// Reference link; e.g. `another-file.css` in `@import another-file.css`;
+			var link = (params[0] || '').replace(matchWithinURL, '$1').replace(matchWithinQuote, '$2');
 
-			options.from = filename;
+			if (link) {
+				// Media query; e.g. `screen` in `@import another-file.css screen`
+				var media = params.slice(1).join(' ');
 
-			return processor.process(contents, options);
-		}).then(function (results) {
-			return results.root;
+				// Whether source is not HTTP (which is ignored)
+				var isNotHTTP = !matchStartingHTTP.test(link);
+
+				if (isNotHTTP) {
+					// Promise the at-rule replaced with the AST of its link
+					var importPromise = transformImport(atRule, link, media, dir);
+
+					// Push the promise into the imports array
+					imports.push(importPromise);
+				}
+			}
 		});
+
+		// Promise every at-rule is processed
+		var importsPromise = Promise.all(imports);
+
+		return importsPromise;
 	};
 
-	var getPath = function (file, fromPath) {
-		if (!path.extname(file)) file = path.join(path.dirname(file), opts.prefix + path.basename(file) + '.' + opts.extension);
+	var transformImport = function (atRule, link, media, dir) {
+		// Promise to read a local CSS file (placeholder)
+		var localPromise = Promise.reject();
 
-		return path.resolve(path.dirname(fromPath), file);
-	};
+		// For each possible directory (starting with the current)
+		[dir].concat(opts.dirs).forEach(function (localdir) {
+			// File relative to the local directory
+			var localfile = getPath(path.resolve(localdir, link), opts.prefix, opts.extension);
 
-	var importRule = function (atRule, result, fromPath, cache) {
-		var matches = /(?:url\()?['"]?([^'"\)]*)['"]?(?:\))?(?:\s+(.+))?/gi.exec(atRule.params);
-
-		if (!matches) {
-			return Promise.reject('Could not parse import: ' + atRule.params);
-		}
-
-		var ofile = matches[1];
-		var media = matches[2];
-
-		if (!ofile) {
-			return Promise.reject('Empty import detected');
-		}
-
-		if (/^(https?:)?\/\//.test(ofile)) {
-			return Promise.resolve();
-		}
-
-		var file = getPath(ofile, fromPath);
-
-		return (new Promise(function (resolve) {
-			pkgres(ofile, {
-				packageFilter: function (pkg) {
-					if (pkg.main) {
-						pkg.main = pkg.style;
-					}
-
-					return pkg;
-				}
-			}, function (err, res) {
-				if (!err) {
-					file = res;
-				}
-
-				resolve();
+			// Promise the local CSS file is processed
+			localPromise = localPromise.catch(function () {
+				return readCSS(localfile, opts.encoding, processor);
 			});
-		})).then(opts.generate ? fs.ensureFile(file) : Promise.resolve()).then(function () {
-			return fs.readFile(file, { encoding: opts.encoding });
-		}).then(function (css) {
-			var transforms = [];
+		});
 
-			if (opts.transforms) {
-				transforms = transforms.concat(opts.transforms || []);
+		// Promise the NPM package is processed
+		var npmPromise = localPromise.catch(function () {
+			return readNPM(link, opts.encoding, processor);
+		});
+
+		// Promise the local file is created
+		var generateLocalPromise = npmPromise.catch(function () {
+			if (opts.generate) {
+				// File relative to the local directory
+				var localfile = getPath(path.resolve(dir, link), opts.prefix, opts.extension);
+
+				return makeCSS(localfile, processor);
 			}
+		});
 
-			if (opts.modules) {
-				transforms.push(modules({
-					getJSON: function (jfile, json) {
-						moduleMaps[file.replace(opts.modules.base, '')] = json;
-					}
-				}));
-			}
-
-			var processor = postcss(transforms);
-			var options   = assign({}, result.opts);
-
-			options.from = file;
-
-			return processor.process(css, options).then(function (results) {
-				return parseStyles(results.root, results, cache).then(function () {
-					if (cache && fromPath) {
-						cache[fromPath] = cache[fromPath] || { dep: [] };
-
-						if (cache[fromPath].dep.indexOf(file) === -1) cache[fromPath].dep.push(file);
-					}
-
+		// Promise the AST replaces the import
+		var replacePromise = generateLocalPromise.then(function (ast) {
+			if (ast) {
+				return transformPromise(ast.root).then(function () {
 					if (media) {
+						// Replace the at-rule with a media query
 						atRule.name = 'media';
 						atRule.params = media;
+
 						atRule.raws.between = ' ';
-						atRule.append(results.root);
-					} else atRule.replaceWith(results.root);
-				});
-			});
-		});
-	};
 
-	var parseStyles = function (css, result, cache) {
-		var fromPath = result.opts.from || css.source.input.file;
-
-		if (fromPath && cache && isCached(fromPath, cache)) {
-			return readFromCache(fromPath, result, cache).then(function (styles) {
-				styles.nodes.forEach(function (node) {
-					node.parent = css;
-				});
-
-				css.source = styles.source;
-				css.nodes  = styles.nodes;
-				css.raws   = styles.raws;
-			});
-		} else {
-			var imports = [];
-
-			css.walkAtRules('import', function (atRule) {
-				imports.push(importRule(atRule, result, fromPath, cache));
-			});
-
-			// Only add dependencies when first adding file to the cache.
-			// Code reused from postcss-import: https://github.com/postcss/postcss-import
-			if (typeof opts.addDependencyTo === 'object' && typeof opts.addDependencyTo.addDependency === 'function') {
-				opts.addDependencyTo.addDependency(fromPath);
-			}
-
-			return Promise.all(imports).then(function () {
-				if (fromPath && cache) {
-					cache[fromPath] = cache[fromPath] || {};
-
-					cache[fromPath].mtime = getModified(fromPath);
-
-					if (imports.length) {
-						var output        = css.toResult().css;
-						var cacheFilename = path.resolve(opts.cachedir, hash(output) + '.css');
-
-						cache[fromPath].cache = cacheFilename;
-
-						return fs.writeFile(cacheFilename, output);
+						// Append the AST to the media query
+						atRule.append(ast.root);
+					} else {
+						// Replace the at-rule with the AST
+						atRule.replaceWith(ast.root);
 					}
-				}
-			});
-		}
-	};
-
-	return function (css, result) {
-		var cache;
-
-		if (opts.cachedir) {
-			fs.mkdirsSync(opts.cachedir);
-
-			try {
-				cache = require(opts.cachefile);
-			} catch (error) {
-				cache = {};
-			}
-		}
-
-		return parseStyles(css, result, cache).then(function () {
-			if (opts.modules) {
-				var mapfile = opts.modules.mapfile || css.source.input.file + '.json';
-
-				return fs.writeFile(mapfile, JSON.stringify(moduleMaps));
-			}
-		}).then(function () {
-			if (cache) {
-				return fs.writeFile(opts.cachefile, JSON.stringify(cache));
+				});
 			}
 		});
+
+		return replacePromise;
 	};
+
+	return transformPromise;
 });

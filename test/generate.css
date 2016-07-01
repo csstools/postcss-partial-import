@@ -2,6 +2,6 @@
     background-color: black;
 }
 
-@import "generate-created.css";
+@import "generate.create.css";
 
 @import "level1/qux";

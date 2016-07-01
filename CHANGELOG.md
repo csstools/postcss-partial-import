@@ -1,3 +1,12 @@
+## 2.0.0 (2016-07-01)
+
+Added: Imports look in node_modules, bower_components, etc
+Added: `dirs` lets imports look in user specified directories
+Added: `plugins` lets PostCSS plugins run over individual partials
+Removed: Caching (for now)
+Updated: Complete rewrite of the plugin
+Updated: `extension` now includes the dot (e.g. `.css`)
+
 ## 1.3.0 (2015-09-14)
 
 Added: Support for generating imported files

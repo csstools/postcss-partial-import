@@ -1,15 +1,17 @@
-# Partial Import [![Build Status][ci-img]][ci]
+# Partial Import
 
-<img align="right" width="135" height="95" src="http://postcss.github.io/postcss/logo-leftp.png" title="Philosopher’s stone, logo of PostCSS">
+<a href="https://github.com/postcss/postcss"><img src="https://postcss.github.io/postcss/logo.svg" alt="PostCSS Logo" width="80" height="80" align="right"></a>
 
-[Partial Import] is a [PostCSS] plugin that inlines standard and Sass-like `@import` statements.
+[![NPM Version][npm-img]][npm] [![Build Status][ci-img]][ci]
+
+[Partial Import] is a [PostCSS] plugin that inlines `@import` statements in CSS. It supports partial imports like Sass, automatically looks for stylesheets within npm and Bower packages, and can generate files if they don’t already exist.
 
 ```css
-/* before file.css */
+/* before: file.css */
 
 @import "foo/bar";
 
-/* before foo/_bar.css */
+/* before: foo/_bar.css */
 
 html {
     background-color: #fafafa;
@@ -118,7 +120,7 @@ The character encoding of files being imported.
 #### `extension`
 
 Type: `String`  
-Default: `css`
+Default: `.css`
 
 The file extension appended to partials being imported.
 
@@ -127,21 +129,28 @@ The file extension appended to partials being imported.
 Type: `String`  
 Default: `_`
 
-The file extension sometimes prepended to partials being imported.
+The leading characters prepended to partials being imported.
 
 #### `generate`
 
 Type: `Boolean`  
 Default: `false`
 
-The option if partials should be generated if they do not already exist.
+Whether partials should be generated if they do not already exist.
 
-#### `cachedir`
+#### `dirs`
 
-Type: `String`  
-Default: `null`
+Type: `Array`  
+Default: `[]`
 
-The directory to store cached includes in. Can reduce compilation time when there are a lot of `@include`s. Setting this property enables the cache.
+A list of alternate directories to find partials in.
+
+#### `plugins`
+
+Type: `Array`  
+Default: `[]`
+
+A list of PostCSS plugins to run over individual partials.
 
 #### `addDependencyTo`
 
@@ -156,14 +165,20 @@ To pass CSS @import files to a compiler (such as webpack), which would otherwise
 // webpack.config.js
 postcss: function(webpack) {
     return [
-        precss({ addDependencyTo: webpack })
+        require('postcss-partial-import')({
+        	addDependencyTo: webpack
+        })
     ];
-},
+}
 ```
 
-[ci]: https://travis-ci.org/jonathantneal/postcss-partial-import
-[ci-img]: https://travis-ci.org/jonathantneal/postcss-partial-import.svg
-[Gulp PostCSS]: https://github.com/postcss/gulp-postcss
+[ci]:      https://travis-ci.org/jonathantneal/postcss-partial-import
+[ci-img]:  https://img.shields.io/travis/jonathantneal/postcss-partial-import.svg
+[npm]:     https://www.npmjs.com/package/postcss-partial-import
+[npm-img]: https://img.shields.io/npm/v/postcss-partial-import.svg
+
+[Gulp PostCSS]:  https://github.com/postcss/gulp-postcss
 [Grunt PostCSS]: https://github.com/nDmitry/grunt-postcss
-[PostCSS]: https://github.com/postcss/postcss
+[PostCSS]:       https://github.com/postcss/postcss
+
 [Partial Import]: https://github.com/jonathantneal/postcss-partial-import
