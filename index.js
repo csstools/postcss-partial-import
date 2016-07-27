@@ -42,13 +42,6 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 		// For each `import` at-rule
 		css.walkAtRules('import', function (atRule) {
-			// Whether the addDependency option is configured
-			var hasAddDependencyMethod = opts.addDependencyTo && typeof opts.addDependencyTo.addDependency === 'function';
-
-			if (hasAddDependencyMethod) {
-				opts.addDependencyTo.addDependency(atRule.source.input.file);
-			}
-
 			// Directory of the current link
 			var dir = path.dirname(atRule.source.input.file);
 
@@ -119,6 +112,13 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		// Promise the AST replaces the import
 		var replacePromise = generateLocalPromise.then(function (ast) {
 			if (ast) {
+				// Whether the addDependency option is configured
+				var hasAddDependencyMethod = opts.addDependencyTo && typeof opts.addDependencyTo.addDependency === 'function';
+
+				if (hasAddDependencyMethod) {
+					opts.addDependencyTo.addDependency(ast.opts.from);
+				}
+
 				return transformPromise(ast.root).then(function () {
 					if (media) {
 						// Replace the at-rule with a media query
