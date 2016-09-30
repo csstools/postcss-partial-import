@@ -16,7 +16,8 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		generate:  false,
 		plugins:   [],
 		prefix:    '_',
-		addDependencyTo: false
+		addDependencyTo: false,
+		resolve: null
 	}, opts);
 
 	if (!Array.isArray(opts.dirs)) {
@@ -93,7 +94,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		// For each possible directory (starting with the current)
 		[dir].concat(opts.dirs).forEach(function (localdir) {
 			// File relative to the local directory
-			var localfile = getPath(path.resolve(localdir, link), opts.prefix, opts.extension);
+			var localfile = getPath(link, localdir, opts);
 
 			// Promise the local CSS file is processed
 			localPromise = localPromise.catch(function () {
@@ -110,7 +111,7 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 		var generateLocalPromise = npmPromise.catch(function () {
 			if (opts.generate) {
 				// File relative to the local directory
-				var localfile = getPath(path.resolve(dir, link), opts.prefix, opts.extension);
+				var localfile = getPath(link, dir, opts);
 
 				return makeCSS(localfile, processor);
 			}
