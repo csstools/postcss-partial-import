@@ -34,6 +34,18 @@ var tests = {
 		'package': {
 			message: 'allows package imports'
 		},
+		'resolve': {
+			message: 'resolves file paths with option',
+			options: {
+				resolve: function (id) {
+					if (/level1/.test(id)) {
+						// Skip straight to level 4
+						var dir = path.join(testdir, 'level1', 'level2', 'level3', 'level4')
+						return id.replace('level1', path.resolve(dir));
+					}
+				}
+			}
+		},
 		'web': {
 			message: 'ignores remote imports'
 		}
