@@ -108,6 +108,33 @@ grunt.initConfig({
 });
 ```
 
+#### CLI
+
+Add [PostCSS] to your build tool:
+
+```bash
+npm install postcss --save-dev
+```
+
+Enable [Partial Import] from the CLI:
+
+```bash
+$ postcss --use postcss-partial-import input.css
+```
+
+Enable [Partial Import] from configuration file:
+
+```bash
+$ postcss --config my-postcss-config.json input.css
+```
+
+```json
+// my-postcss-config.json
+{
+   "use": ["postcss-partial-import"]
+ }
+ ```
+
 ## Options
 
 #### `encoding`
