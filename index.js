@@ -97,7 +97,11 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 		// Promise the NPM package is processed
 		var npmPromise = localPromise.catch(function () {
-			return readNPM(link, opts.encoding, processor);
+			var resolvedDirs = [dir].concat(opts.dirs).map(function (unresolvedDir) {
+				return path.resolve(dir, unresolvedDir);
+			});
+
+			return readNPM(link, opts, processor, resolvedDirs);
 		});
 
 		// Promise the local file is created
