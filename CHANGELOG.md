@@ -1,3 +1,9 @@
+## 2.1.0 (2016-10-18)
+
+- Added: Use css being imported with `addDepedencyTo`
+- Added: `resolve` option to override resolving paths
+- Updated: Improve ability to resolve npm modules
+
 ## 2.0.0 (2016-07-01)
 
 - Added: Imports look in node_modules, bower_components, etc

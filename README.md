@@ -1,55 +1,54 @@
 # Partial Import
 
-<a href="https://github.com/postcss/postcss"><img src="https://postcss.github.io/postcss/logo.svg" alt="PostCSS Logo" width="80" height="80" align="right"></a>
+<img src="http://postcss.github.io/postcss/logo-leftp.svg" width="135" height="95" align="right" title="Philosopher’s stone, logo of PostCSS">
 
 [![NPM Version][npm-img]][npm] [![Build Status][ci-img]][ci]
 
-[Partial Import] is a [PostCSS] plugin that inlines `@import` statements in CSS. It supports partial imports like Sass, automatically looks for stylesheets within npm and Bower packages, and can generate files if they don’t already exist.
+[Partial Import] inlines `@import` statements in CSS.
+
+[Partial Import] allows partial imports [like Sass](#prefix). It finds stylesheets within [npm](https://www.npmjs.com/package/package) and [Bower](https://bower.io/search/) packages. It can even [generate](#generate) imports if they don’t already exist.
 
 ```css
-/* before: file.css */
-
-@import "foo/bar";
-
 /* before: foo/_bar.css */
 
 html {
     background-color: #fafafa;
 }
 
-/* after */
+/* before: file.css */
+
+@import "foo/bar";
+
+/* after file.css */
 
 html {
     background-color: #fafafa;
 }
-
 ```
 
 ## Usage
 
-Follow these steps to use [Partial Import].
-
-Add [Partial Import] to your build tool:
+Add [Partial Import] as a dependency:
 
 ```bash
 npm install postcss-partial-import --save-dev
 ```
 
-#### Node
+#### Node Usage
 
 ```js
 require('postcss-partial-import')({ /* options */ }).process(YOUR_CSS);
 ```
 
-#### PostCSS
+#### PostCSS and CLI Usage
 
-Add [PostCSS] to your build tool:
+Add [PostCSS] as a dependency:
 
 ```bash
 npm install postcss --save-dev
 ```
 
-Load [Partial Import] as a PostCSS plugin:
+Use [Partial Import] as a PostCSS plugin:
 
 ```js
 postcss([
@@ -57,15 +56,30 @@ postcss([
 ]);
 ```
 
-#### Gulp
+Or, use [Partial Import] as a PostCSS plugin from the CLI:
 
-Add [Gulp PostCSS] to your build tool:
+```sh
+postcss --use postcss-partial-import input.css
+
+# or, use a json configuration
+postcss --config my-postcss-config.json input.css
+```
+
+```json
+{
+  "use": ["postcss-partial-import"]
+}
+```
+
+#### Gulp Usage
+
+Add [Gulp PostCSS] as a dependency:
 
 ```bash
 npm install gulp-postcss --save-dev
 ```
 
-Enable [Partial Import] within your Gulpfile:
+Use [Partial Import] in your Gulpfile:
 
 ```js
 var postcss = require('gulp-postcss');
@@ -81,15 +95,15 @@ gulp.task('css', function () {
 });
 ```
 
-#### Grunt
+#### Grunt Usage
 
-Add [Grunt PostCSS] to your build tool:
+Add [Grunt PostCSS] as a dependency:
 
 ```bash
 npm install grunt-postcss --save-dev
 ```
 
-Enable [Partial Import] within your Gruntfile:
+Use [Partial Import] in your Gruntfile:
 
 ```js
 grunt.loadNpmTasks('grunt-postcss');
@@ -107,33 +121,6 @@ grunt.initConfig({
     }
 });
 ```
-
-#### CLI
-
-Add [PostCSS] to your build tool:
-
-```bash
-npm install postcss --save-dev
-```
-
-Enable [Partial Import] from the CLI:
-
-```bash
-$ postcss --use postcss-partial-import input.css
-```
-
-Enable [Partial Import] from configuration file:
-
-```bash
-$ postcss --config my-postcss-config.json input.css
-```
-
-```json
-// my-postcss-config.json
-{
-   "use": ["postcss-partial-import"]
- }
- ```
 
 ## Options
 
@@ -187,7 +174,6 @@ Default: `null`
 To pass CSS @import files to a compiler (such as webpack), which would otherwise not know which CSS files to watch for browser reloading.
 
 *Example*
-
 ```javascript
 // webpack.config.js
 postcss: function(webpack) {
@@ -206,9 +192,9 @@ Default: `null`
 
 Overrides the default function for resolving paths. The function will fall back to the default resolving behaviour if nothing is returned. The function will receive four arguments:
 
-* `id`: The `@import` string to be resolved
-* `dir`: The directory of the source file
-* `options`: All options passed in to the plugin
+- `id`: The `@import` string to be resolved
+- `dir`: The directory of the source file
+- `options`: All options passed in to the plugin
 
 [ci]:      https://travis-ci.org/jonathantneal/postcss-partial-import
 [ci-img]:  https://img.shields.io/travis/jonathantneal/postcss-partial-import.svg

@@ -1,6 +1,6 @@
 {
   "name": "postcss-partial-import",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Inline @import statements in CSS",
   "keywords": [
     "postcss",
