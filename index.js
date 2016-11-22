@@ -70,6 +70,11 @@ module.exports = postcss.plugin('postcss-partial-import', function (opts) {
 
 					// Push the promise into the imports array
 					imports.push(importPromise);
+
+					// Add a dependency on the nested import
+					if (hasAddDependencyMethod) {
+						opts.addDependencyTo.addDependency(path.join(dir, link));
+					}
 				}
 			}
 		});
