@@ -1,3 +1,7 @@
+### 3.0.1 (December 14, 2016)
+
+- Added: lib directory to package
+
 ### 3.0.0 (December 14, 2016)
 
 - Added: Plugin refactoring as an alternative version of postcss-import
