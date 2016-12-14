@@ -1,7 +1,0 @@
-.level-0 {
-    background-color: black;
-}
-
-@import "generate.create.css";
-
-@import "level1/qux";
