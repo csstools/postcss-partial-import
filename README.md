@@ -82,9 +82,9 @@ Whether similar files (based on the same content) will be skipped.
 #### `prefix`
 
 Type: `String`  
-Default: `"_"`
+Default: `""`
 
-Leading characters conditionally prepended to imports which are not found without them.
+Leading characters conditionally prepended to imports which are not found without them. For [Sass]-like, use `"_"`.
 
 #### `glob`
 

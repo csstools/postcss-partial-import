@@ -11,7 +11,7 @@ module.exports = postcss.plugin(
 			{
 				glob: true,
 				extension: '.css',
-				prefix: '_',
+				prefix: '',
 				touch: false
 			},
 			opts,

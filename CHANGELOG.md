@@ -1,11 +1,17 @@
+### 3.1.0 (December 20, 2016)
+
+- Added: Tests for glob, extension
+- Changed: Default `prefix` is now empty (`""`)
+- Removed: JSCS validation
+
 ### 3.0.1 (December 14, 2016)
 
-- Added: lib directory to package
+- Added: `lib` directory to the package
 
 ### 3.0.0 (December 14, 2016)
 
 - Added: Plugin refactoring as an alternative version of postcss-import
-- Updated: boilerplate conventions (Node v6.9.1 LTS)
+- Updated: Boilerplate conventions (Node v6.9.1 LTS)
 
 ### 2.1.0 (October 18, 2016)
 

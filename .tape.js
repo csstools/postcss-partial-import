@@ -9,7 +9,7 @@ module.exports = {
 				message: /^Failed to find 'import1.css'/
 			}
 		},
-		'02-touch/test:enabled': {
+		'02-touch/test:true': {
 			message: 'supports { touch: true } with missing import usage',
 			options: {
 				touch: true
@@ -23,7 +23,19 @@ module.exports = {
 			)
 		},
 		'03-glob/test': {
-			message: 'supports { glob: true } usage'
+			message: 'supports { glob: true } usage',
+			options: {
+				glob: true
+			}
+		},
+		'03-glob/test:false': {
+			message: 'supports { glob: false } usage',
+			options: {
+				glob: false
+			},
+			error: {
+				message: /^Failed to find 'dir1\/\*\.css'/
+			}
 		},
 		'04-resolve/test': {
 			message: 'supports { resolve: customFn } usage',
@@ -33,6 +45,12 @@ module.exports = {
 				resolve(id.replace('import1', 'import2'), base, options) :
 				// Otherwise, use the regular resolve
 				resolve(id, base, options)
+			}
+		},
+		'05-pcss/test': {
+			message: 'supports { extension: ".pcss" } usage',
+			options: {
+				extension: '.pcss'
 			}
 		}
 	}
