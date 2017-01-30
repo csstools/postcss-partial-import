@@ -1,0 +1,2 @@
+@import "./dir1/import2";
+@import ".\\dir1\\import3";
