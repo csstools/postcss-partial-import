@@ -1,6 +1,6 @@
 {
   "name": "postcss-partial-import",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Inline sugary @import statements in CSS",
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "license": "CC0-1.0",

@@ -1,3 +1,7 @@
+### 3.1.1 (February 14, 2017)
+
+- Updated: Fixed prefix handling when compiling on Windows
+
 ### 3.1.0 (December 20, 2016)
 
 - Added: Tests for glob, extension
