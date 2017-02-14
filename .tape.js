@@ -52,6 +52,12 @@ module.exports = {
 			options: {
 				extension: '.pcss'
 			}
+		},
+		'06-prefix/test': {
+			message: 'supports { prefix: "_" } usage',
+			options: {
+				prefix: '_'
+			}
 		}
 	}
 };
