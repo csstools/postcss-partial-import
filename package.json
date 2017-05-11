@@ -1,6 +1,6 @@
 {
   "name": "postcss-partial-import",
-  "version": "3.1.1",
+  "version": "4.0.0",
   "description": "Inline sugary @import statements in CSS",
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "license": "CC0-1.0",
@@ -13,37 +13,30 @@
     "lib"
   ],
   "scripts": {
-    "lint": "echint && eslint *.js lib/*.js",
+    "clean": "git clean -X -d -f",
     "prepublish": "npm test",
-    "tape": "postcss-tape",
-    "test": "npm run lint && postcss-tape"
+    "test": "echo 'Running tests...'; npm run test:js && npm run test:tape",
+    "test:js": "eslint *.js --cache --ignore-pattern .gitignore",
+    "test:tape": "postcss-tape"
   },
   "engines": {
     "node": ">=6.9.1"
   },
   "dependencies": {
     "glob": "^7.1.1",
-    "postcss-import": "^9.0.0"
+    "postcss": "^6.0.1",
+    "postcss-import": "^9.1.0"
   },
   "devDependencies": {
-    "echint": "^2.1.0",
-    "echint-config-dev": "1.0.0",
-    "eslint": "^3.12.1",
-    "eslint-config-dev": "1.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-dev": "2.0.0",
     "normalize-css": "^2.3.1",
-    "postcss-tape": "1.3.0"
-  },
-  "echint": {
-    "extends": "dev"
+    "postcss": "^6.0.1",
+    "postcss-tape": "2.0.1",
+    "pre-commit": "^1.2.2"
   },
   "eslintConfig": {
-    "extends": "dev",
-    "parserOptions": {
-      "sourceType": "module"
-    },
-    "rules": {
-      "no-nested-ternary": [0]
-    }
+    "extends": "dev"
   },
   "keywords": [
     "postcss",

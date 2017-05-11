@@ -6,7 +6,7 @@ const resolveId = require('./lib/resolve-id');
 // plugin
 module.exports = postcss.plugin(
 	'postcss-partial-import',
-	(opts = {}) => processor(
+	(opts) => processor(
 		Object.assign(
 			{
 				glob: true,
@@ -15,7 +15,7 @@ module.exports = postcss.plugin(
 				touch: false
 			},
 			opts,
-			opts.resolve ? {
+			opts && opts.resolve ? {
 				resolve: opts.resolve
 			} : {
 				resolve: resolveId
@@ -23,10 +23,3 @@ module.exports = postcss.plugin(
 		)
 	)
 );
-
-// override plugin#process
-module.exports.process = function (cssString, pluginOptions, processOptions) {
-	return postcss([
-		0 in arguments ? module.exports(pluginOptions) : module.exports()
-	]).process(cssString, processOptions);
-};

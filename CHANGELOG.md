@@ -1,3 +1,12 @@
+# Changes to PostCSS Nesting
+
+### 4.0.0 (May 11, 2017)
+
+- Added: PostCSS v6 compatibility
+- Added: Node v4 compatibility
+- Added: .editorconfig
+- Removed: echoing
+
 ### 3.1.1 (February 14, 2017)
 
 - Updated: Fixed prefix handling when compiling on Windows
