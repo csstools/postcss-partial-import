@@ -1,6 +1,8 @@
-// tooling
-const postcss = require('postcss');
+// external tooling
+const postcss   = require('postcss');
 const processor = require('postcss-import');
+
+// internal tooling
 const resolveId = require('./lib/resolve-id');
 
 // plugin
