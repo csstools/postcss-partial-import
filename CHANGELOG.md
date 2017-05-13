@@ -1,5 +1,10 @@
 # Changes to PostCSS Nesting
 
+### 4.1.0 (May 13, 2017)
+
+- Added: Use PostCSS Import v10=
+- Updated: Properly note Node v4 support in package.json
+
 ### 4.0.0 (May 11, 2017)
 
 - Added: PostCSS v6 compatibility
